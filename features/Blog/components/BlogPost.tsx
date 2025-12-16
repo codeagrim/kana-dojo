@@ -10,6 +10,10 @@ import type {
 import { TableOfContents } from './TableOfContents';
 import { RelatedPosts } from './RelatedPosts';
 import { mdxComponents } from './mdx';
+import { ActionButton } from '@/shared/components/ui/ActionButton';
+import { Link } from '@/core/i18n/routing';
+import { ArrowLeft, BookOpen } from 'lucide-react';
+import { useClick } from '@/shared/hooks/useAudio';
 
 /**
  * Category badge color mappings
@@ -46,6 +50,8 @@ export function BlogPost({
   children,
   className
 }: BlogPostProps) {
+  const { playClick } = useClick();
+
   const formattedDate = new Date(post.publishedAt).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -65,6 +71,19 @@ export function BlogPost({
       className={cn('mx-auto max-w-4xl', className)}
       data-testid='blog-post'
     >
+      {/* Back to Academy Button - Top */}
+      <Link href='/academy' className='block mb-6' onClick={playClick}>
+        <ActionButton
+          colorScheme='secondary'
+          borderColorScheme='secondary'
+          borderBottomThickness={4}
+          className='w-auto inline-flex'
+        >
+          <ArrowLeft className='size-5' />
+          <span>Back to Academy</span>
+        </ActionButton>
+      </Link>
+
       {/* Article Header */}
       <header className='mb-8' data-testid='blog-post-header'>
         {/* Category and Difficulty Badges */}
@@ -173,19 +192,47 @@ export function BlogPost({
               <RelatedPosts posts={relatedPosts} />
             </section>
           )}
+
+          {/* Back to Academy Button - Bottom */}
+          <Link href='/academy' className='block mt-12' onClick={playClick}>
+            <ActionButton
+              colorScheme='main'
+              borderColorScheme='main'
+              borderBottomThickness={4}
+            >
+              <BookOpen className='size-5' />
+              <span>Browse All Articles</span>
+            </ActionButton>
+          </Link>
         </main>
 
         {/* Sidebar with Table of Contents (Desktop) */}
-        {post.headings.length > 0 && (
-          <aside
-            className='hidden w-64 shrink-0 lg:block'
-            data-testid='blog-post-sidebar'
-          >
-            <div className='sticky top-8 rounded-xl border border-[var(--border-color)] bg-[var(--card-color)] p-6'>
-              <TableOfContents headings={post.headings} />
-            </div>
-          </aside>
-        )}
+        <aside
+          className='hidden w-64 shrink-0 lg:block'
+          data-testid='blog-post-sidebar'
+        >
+          <div className='sticky top-8 space-y-4'>
+            {/* Back to Academy Button - Sidebar */}
+            <Link href='/academy' className='block' onClick={playClick}>
+              <ActionButton
+                colorScheme='secondary'
+                borderColorScheme='secondary'
+                borderBottomThickness={4}
+                borderRadius='xl'
+              >
+                <ArrowLeft className='size-4' />
+                <span className='text-sm'>Back to Academy</span>
+              </ActionButton>
+            </Link>
+
+            {/* Table of Contents */}
+            {post.headings.length > 0 && (
+              <div className='rounded-xl border border-[var(--border-color)] bg-[var(--card-color)] p-6'>
+                <TableOfContents headings={post.headings} />
+              </div>
+            )}
+          </div>
+        </aside>
       </div>
     </article>
   );

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { getBlogPosts, BlogList } from '@/features/Blog';
 import { routing, type Locale } from '@/core/i18n/routing';
+import Sidebar from '@/shared/components/Menu/Sidebar';
+import Banner from '@/shared/components/Menu/Banner';
 
 /**
  * Generate static params for all supported locales
@@ -49,20 +51,25 @@ export default async function AcademyPage({ params }: AcademyPageProps) {
   const posts = getBlogPosts(locale as Locale);
 
   return (
-    <div className='mx-auto max-w-6xl px-4 py-8'>
-      {/* Page Header */}
-      <header className='mb-8'>
-        <h1 className='mb-4 text-3xl font-bold text-[var(--main-color)] md:text-4xl'>
-          Academy
-        </h1>
-        <p className='text-lg text-[var(--secondary-color)]'>
-          Explore our collection of Japanese learning articles covering
-          Hiragana, Katakana, Kanji, vocabulary, grammar, and Japanese culture.
-        </p>
-      </header>
+    <div className='min-h-[100dvh] max-w-[100dvw] lg:pr-20 flex gap-0'>
+      <Sidebar />
+      <div className='flex flex-col gap-4 w-full lg:w-4/5 px-4 md:px-8 pb-20'>
+        <Banner />
+        {/* Page Header */}
+        <header className='mb-8'>
+          <h1 className='mb-4 text-3xl font-bold text-[var(--main-color)] md:text-4xl'>
+            Academy
+          </h1>
+          <p className='text-lg text-[var(--secondary-color)]'>
+            Explore our collection of Japanese learning articles covering
+            Hiragana, Katakana, Kanji, vocabulary, grammar, and Japanese
+            culture.
+          </p>
+        </header>
 
-      {/* Blog List with Category Filter */}
-      <BlogList posts={posts} showFilter={true} />
+        {/* Blog List with Category Filter */}
+        <BlogList posts={posts} showFilter={true} />
+      </div>
     </div>
   );
 }
