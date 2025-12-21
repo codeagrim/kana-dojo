@@ -77,8 +77,8 @@ export default function PreGameScreen({
   const { playClick } = useClick();
 
   return (
-    <div className='min-h-[100dvh] flex flex-col lg:flex-row items-start justify-center p-4 gap-6'>
-      <div className='max-w-md w-full lg:max-w-lg text-center space-y-5'>
+    <div className='flex min-h-[100dvh] flex-col items-start justify-center gap-6 p-4 lg:flex-row'>
+      <div className='w-full max-w-md space-y-5 text-center lg:max-w-lg'>
         <Timer size={64} className='mx-auto text-[var(--main-color)]' />
         <h1 className='text-2xl font-bold text-[var(--secondary-color)]'>
           Blitz
@@ -110,11 +110,11 @@ export default function PreGameScreen({
         />
 
         {/* Action Buttons */}
-        <div className='flex flex-row items-center justify-center gap-2 md:gap-4 w-full'>
+        <div className='flex w-full flex-row items-center justify-center gap-2 md:gap-4'>
           <Link href={`/${dojoType}`} className='w-1/2'>
             <button
               className={clsx(
-                'w-full h-12 px-2 sm:px-6 flex flex-row justify-center items-center gap-2',
+                'flex h-12 w-full flex-row items-center justify-center gap-2 px-2 sm:px-6',
                 'bg-[var(--secondary-color)] text-[var(--background-color)]',
                 'rounded-2xl transition-colors duration-200',
                 'border-b-6 border-[var(--secondary-color-accent)] shadow-sm',
@@ -129,10 +129,10 @@ export default function PreGameScreen({
           <button
             onClick={onStart}
             className={clsx(
-              'w-1/2 h-12 px-2 sm:px-6 flex flex-row justify-center items-center gap-2',
+              'flex h-12 w-1/2 flex-row items-center justify-center gap-2 px-2 sm:px-6',
               'bg-[var(--main-color)] text-[var(--background-color)]',
               'rounded-2xl transition-colors duration-200',
-              'font-medium border-b-6 border-[var(--main-color-accent)] shadow-sm',
+              'border-b-6 border-[var(--main-color-accent)] font-medium shadow-sm',
               'hover:cursor-pointer'
             )}
           >
@@ -143,7 +143,7 @@ export default function PreGameScreen({
       </div>
 
       {/* Goal Timers Panel */}
-      <div className='w-full lg:w-80 space-y-4'>
+      <div className='w-full space-y-4 lg:w-80'>
         <ActionButton
           onClick={() => {
             playClick();
@@ -153,7 +153,7 @@ export default function PreGameScreen({
           borderColorScheme='secondary'
           borderBottomThickness={4}
           borderRadius='xl'
-          className='w-full px-4 py-2 flex items-center justify-center gap-2'
+          className='flex w-full items-center justify-center gap-2 px-4 py-2'
         >
           <Target size={20} />
           <span>{showGoalTimers ? 'Hide' : 'Show'} Goal Timers</span>
@@ -225,21 +225,21 @@ function SelectedLevelsCard({
   };
 
   return (
-    <div className='bg-[var(--card-color)] rounded-lg p-4 text-left'>
+    <div className='rounded-lg bg-[var(--card-color)] p-4 text-left'>
       <div className='flex flex-col gap-2'>
         <div className='flex flex-row items-center gap-2'>
           <CheckCircle2
-            className='text-[var(--secondary-color)] shrink-0'
+            className='shrink-0 text-[var(--secondary-color)]'
             size={20}
           />
           <span className='text-sm'>
             {dojoType === 'kana' ? 'Selected Groups:' : 'Selected Levels:'}
           </span>
         </div>
-        <span className='text-[var(--secondary-color)] text-sm break-words md:hidden'>
+        <span className='text-sm break-words text-[var(--secondary-color)] md:hidden'>
           {formatCompact()}
         </span>
-        <span className='text-[var(--secondary-color)] text-sm break-words hidden md:inline'>
+        <span className='hidden text-sm break-words text-[var(--secondary-color)] md:inline'>
           {formatFull()}
         </span>
       </div>
@@ -276,9 +276,9 @@ function GameModeSelector({
             }}
             disabled={isDisabled}
             className={clsx(
-              'w-full p-4 rounded-xl text-left hover:cursor-pointer',
-              'border-2 flex items-center gap-4 bg-[var(--card-color)]',
-              isDisabled && 'opacity-50 cursor-not-allowed',
+              'w-full rounded-xl p-4 text-left hover:cursor-pointer',
+              'flex items-center gap-4 border-2 bg-[var(--card-color)]',
+              isDisabled && 'cursor-not-allowed opacity-50',
               isSelected
                 ? 'border-[var(--main-color)]'
                 : 'border-[var(--border-color)]'
@@ -286,7 +286,7 @@ function GameModeSelector({
           >
             <div
               className={clsx(
-                'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
                 isSelected
                   ? 'bg-[var(--main-color)] text-[var(--background-color)]'
                   : 'bg-[var(--border-color)] text-[var(--muted-color)]'
@@ -294,7 +294,7 @@ function GameModeSelector({
             >
               <Icon size={20} />
             </div>
-            <div className='flex-1 min-w-0'>
+            <div className='min-w-0 flex-1'>
               <h3 className='text-base font-medium text-[var(--main-color)]'>
                 {mode.title}
               </h3>
@@ -304,7 +304,7 @@ function GameModeSelector({
             </div>
             <div
               className={clsx(
-                'w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center',
+                'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2',
                 isSelected
                   ? 'border-[var(--secondary-color)] bg-[var(--secondary-color)]'
                   : 'border-[var(--border-color)]'
@@ -312,7 +312,7 @@ function GameModeSelector({
             >
               {isSelected && (
                 <svg
-                  className='w-3 h-3 text-[var(--background-color)]'
+                  className='h-3 w-3 text-[var(--background-color)]'
                   fill='none'
                   viewBox='0 0 24 24'
                   stroke='currentColor'
@@ -343,11 +343,11 @@ function DurationSelector({
   const { playClick } = useClick();
 
   return (
-    <div className='bg-[var(--card-color)] rounded-lg p-4 space-y-3'>
+    <div className='space-y-3 rounded-lg bg-[var(--card-color)] p-4'>
       <p className='text-sm font-medium text-[var(--secondary-color)]'>
-        Duration:
+        Duration: 
       </p>
-      <div className='flex gap-2 justify-center flex-wrap'>
+      <div className='flex flex-wrap justify-center gap-2'>
         {DURATION_OPTIONS.map(duration => (
           <ActionButton
             key={duration}
@@ -359,10 +359,10 @@ function DurationSelector({
             borderColorScheme={
               challengeDuration === duration ? 'main' : 'secondary'
             }
-            borderBottomThickness={6}
+            borderBottomThickness={8}
             borderRadius='2xl'
             className={clsx(
-              'px-4 py-2 w-auto ',
+              'w-auto px-4 py-2',
               challengeDuration !== duration && 'opacity-60'
             )}
           >
