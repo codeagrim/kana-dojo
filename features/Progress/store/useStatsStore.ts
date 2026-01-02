@@ -683,7 +683,38 @@ const useStatsStore = create<IStatsState>()(
     }),
     {
       name: 'kanadojo-stats',
-      partialize: state => ({ allTimeStats: state.allTimeStats })
+      partialize: state => ({ allTimeStats: state.allTimeStats }),
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as Partial<IStatsState> | undefined;
+        const defaultAllTimeStats = currentState.allTimeStats;
+
+        return {
+          ...currentState,
+          allTimeStats: {
+            ...defaultAllTimeStats,
+            ...(persisted?.allTimeStats || {}),
+            // Ensure nested objects/arrays are properly merged with defaults
+            gauntletStats: {
+              ...defaultGauntletStats,
+              ...(persisted?.allTimeStats?.gauntletStats || {})
+            },
+            blitzStats: {
+              ...defaultBlitzStats,
+              ...(persisted?.allTimeStats?.blitzStats || {})
+            },
+            // Ensure arrays have defaults if missing from persisted state
+            dojosUsed: persisted?.allTimeStats?.dojosUsed ?? [],
+            modesUsed: persisted?.allTimeStats?.modesUsed ?? [],
+            challengeModesUsed:
+              persisted?.allTimeStats?.challengeModesUsed ?? [],
+            trainingDays: persisted?.allTimeStats?.trainingDays ?? [],
+            answerTimesMs: persisted?.allTimeStats?.answerTimesMs ?? [],
+            kanjiCorrectByLevel:
+              persisted?.allTimeStats?.kanjiCorrectByLevel ?? {},
+            characterMastery: persisted?.allTimeStats?.characterMastery ?? {}
+          }
+        };
+      }
     }
   )
 );
