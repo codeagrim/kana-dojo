@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
 import {
@@ -90,7 +91,9 @@ function EmptyState() {
  */
 export default function StatsPage({ className }: StatsPageProps) {
   const { playClick } = useClick();
-  const { clearAllProgress } = useStatsStore();
+  const { clearAllProgress } = useStatsStore(
+    useShallow(state => ({ clearAllProgress: state.clearAllProgress }))
+  );
   const { stats, isLoading } = useStatsAggregator();
   const [showResetModal, setShowResetModal] = useState(false);
 

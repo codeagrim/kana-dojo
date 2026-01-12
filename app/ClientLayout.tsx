@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { useState, useEffect, startTransition } from 'react';
 import usePreferencesStore from '@/features/Preferences/store/usePreferencesStore';
 import useCrazyModeStore from '@/features/CrazyMode/store/useCrazyModeStore';
+import { useShallow } from 'zustand/react/shallow';
 import { usePathname } from 'next/navigation';
 import { ScrollRestoration } from 'next-scroll-restoration';
 import WelcomeModal from '@/shared/components/Modals/WelcomeModal';
@@ -57,14 +58,20 @@ export default function ClientLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { theme } = usePreferencesStore();
-  const font = usePreferencesStore(state => state.font);
+  const { theme, font } = usePreferencesStore(
+    useShallow(state => ({ theme: state.theme, font: state.font }))
+  );
 
   // Crazy Mode Integration
-  const isCrazyMode = useCrazyModeStore(state => state.isCrazyMode);
-  const activeThemeId = useCrazyModeStore(state => state.activeThemeId);
-  const activeFontName = useCrazyModeStore(state => state.activeFontName);
-  const randomize = useCrazyModeStore(state => state.randomize);
+  const { isCrazyMode, activeThemeId, activeFontName, randomize } =
+    useCrazyModeStore(
+      useShallow(state => ({
+        isCrazyMode: state.isCrazyMode,
+        activeThemeId: state.activeThemeId,
+        activeFontName: state.activeFontName,
+        randomize: state.randomize
+      }))
+    );
 
   // Determine effective theme and font
   const effectiveTheme = isCrazyMode && activeThemeId ? activeThemeId : theme;

@@ -187,25 +187,33 @@ const ActiveTile = memo(
         {char}
       </motion.button>
     );
-  }
+  },
+  (prevProps, nextProps) =>
+    prevProps.id === nextProps.id &&
+    prevProps.char === nextProps.char &&
+    prevProps.isDisabled === nextProps.isDisabled &&
+    prevProps.onClick === nextProps.onClick
 );
 
 ActiveTile.displayName = 'ActiveTile';
 
 // Blank placeholder - no layoutId, just takes up space
-const BlankTile = memo(({ char }: { char: string }) => {
-  return (
-    <div
-      className={clsx(
-        tileBaseStyles,
-        'border-transparent bg-[var(--border-color)]/30',
-        'select-none'
-      )}
-    >
-      <span className='opacity-0'>{char}</span>
-    </div>
-  );
-});
+const BlankTile = memo(
+  ({ char }: { char: string }) => {
+    return (
+      <div
+        className={clsx(
+          tileBaseStyles,
+          'border-transparent bg-[var(--border-color)]/30',
+          'select-none'
+        )}
+      >
+        <span className='opacity-0'>{char}</span>
+      </div>
+    );
+  },
+  (prevProps, nextProps) => prevProps.char === nextProps.char
+);
 
 BlankTile.displayName = 'BlankTile';
 
@@ -306,8 +314,22 @@ const WordBuildingGame = ({
 
   const [bottomBarState, setBottomBarState] = useState<BottomBarState>('check');
 
+  // Memoize dependencies for generateWord to reduce re-renders
+  const generateWordDeps = useMemo(
+    () => ({
+      isReverse,
+      selectedKana,
+      selectedRomaji,
+      wordLength,
+      kanaToRomaji,
+      romajiToKana
+    }),
+    [isReverse, selectedKana, selectedRomaji, wordLength, kanaToRomaji, romajiToKana]
+  );
+
   // Generate a word (array of characters) and distractors
   const generateWord = useCallback(() => {
+    const { isReverse, selectedKana, selectedRomaji, wordLength, kanaToRomaji, romajiToKana } = generateWordDeps;
     const sourceChars = isReverse ? selectedRomaji : selectedKana;
     if (sourceChars.length < wordLength) {
       return { wordChars: [], answerChars: [], allTiles: [] };
@@ -349,14 +371,7 @@ const WordBuildingGame = ({
     );
 
     return { wordChars, answerChars, allTiles };
-  }, [
-    isReverse,
-    selectedKana,
-    selectedRomaji,
-    wordLength,
-    kanaToRomaji,
-    romajiToKana
-  ]);
+  }, [generateWordDeps]);
 
   const [wordData, setWordData] = useState(() => generateWord());
   const [placedTiles, setPlacedTiles] = useState<string[]>([]);

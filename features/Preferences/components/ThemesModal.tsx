@@ -1,15 +1,32 @@
 'use client';
 
-import themeSets, { applyTheme } from '@/features/Preferences/data/themes';
+import { applyTheme } from '@/features/Preferences/data/themes';
 import usePreferencesStore from '@/features/Preferences/store/usePreferencesStore';
 import { useClick } from '@/shared/hooks/useAudio';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useState, useEffect } from 'react';
+import type { LucideIcon } from 'lucide-react';
 
 interface ThemesModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+}
+
+// Local type definitions for lazy-loaded themes
+interface Theme {
+  id: string;
+  backgroundColor: string;
+  cardColor: string;
+  borderColor: string;
+  mainColor: string;
+  secondaryColor: string;
+}
+
+interface ThemeGroup {
+  name: string;
+  icon: LucideIcon;
+  themes: Theme[];
 }
 
 interface ThemeCardProps {
@@ -89,6 +106,19 @@ export default function ThemesModal({ open, onOpenChange }: ThemesModalProps) {
   const { playClick } = useClick();
   const selectedTheme = usePreferencesStore(state => state.theme);
   const setSelectedTheme = usePreferencesStore(state => state.setTheme);
+
+  // Lazy load themes
+  const [themeSets, setThemeSets] = useState<ThemeGroup[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (open && !isLoaded) {
+      import('@/features/Preferences/data/themes').then(module => {
+        setThemeSets(module.default);
+        setIsLoaded(true);
+      });
+    }
+  }, [open, isLoaded]);
 
   const handleThemeClick = useCallback(
     (themeId: string) => {

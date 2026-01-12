@@ -6,14 +6,14 @@ import {
   Sparkles,
   BookOpen,
   Languages,
-  LucideIcon
+  type LucideIcon
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useClick } from '@/shared/hooks/useAudio';
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode, useEffect, useRef, memo, useState } from 'react';
 import { useInputPreferences } from '@/features/Preferences';
 import { removeLocaleFromPath } from '@/shared/lib/pathUtils';
-import { experiments } from '@/shared/data/experiments';
+import type { Experiment } from '@/shared/data/experiments';
 
 // ============================================================================
 // Types
@@ -54,7 +54,8 @@ const mainNavItems: NavItem[] = [
   }
 ];
 
-const secondaryNavSections: NavSection[] = [
+// Static sections that don't need lazy loading
+const staticSecondaryNavSections: NavSection[] = [
   {
     title: 'Academy',
     items: [{ href: '/academy', label: 'Guides', icon: BookOpen }]
@@ -62,20 +63,14 @@ const secondaryNavSections: NavSection[] = [
   {
     title: 'Tools',
     items: [{ href: '/translate', label: 'Translate', icon: Languages }]
-  },
-  {
-    title: 'Experiments',
-    items: [
-      { href: '/experiments', label: 'All Experiments', icon: Sparkles },
-      // Dynamically add all experiments from shared data
-      ...experiments.map(exp => ({
-        href: exp.href,
-        label: exp.name,
-        icon: exp.icon || null
-      }))
-    ]
   }
 ];
+
+// Base experiments section (without dynamic experiments)
+const baseExperimentsSection: NavSection = {
+  title: 'Experiments',
+  items: [{ href: '/experiments', label: 'All Experiments', icon: Sparkles }]
+};
 
 // ============================================================================
 // Subcomponents
@@ -88,7 +83,7 @@ type NavLinkProps = {
   variant: 'main' | 'secondary';
 };
 
-const NavLink = ({ item, isActive, onClick, variant }: NavLinkProps) => {
+const NavLink = memo(({ item, isActive, onClick, variant }: NavLinkProps) => {
   const Icon = item.icon;
   const isMain = variant === 'main';
 
@@ -135,7 +130,7 @@ const NavLink = ({ item, isActive, onClick, variant }: NavLinkProps) => {
       <span className={isMain ? 'max-lg:hidden' : undefined}>{item.label}</span>
     </Link>
   );
-};
+});
 
 type SectionHeaderProps = {
   title: string;
@@ -160,6 +155,32 @@ const Sidebar = () => {
   const { playClick } = useClick();
 
   const escButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  // Lazy load experiments
+  const [loadedExperiments, setLoadedExperiments] = useState<Experiment[]>([]);
+
+  useEffect(() => {
+    // Dynamically import experiments data
+    import('@/shared/data/experiments').then(module => {
+      setLoadedExperiments(module.experiments);
+    });
+  }, []);
+
+  // Build secondary nav sections with lazy-loaded experiments
+  const secondaryNavSections: NavSection[] = [
+    ...staticSecondaryNavSections,
+    {
+      ...baseExperimentsSection,
+      items: [
+        ...baseExperimentsSection.items,
+        ...loadedExperiments.map(exp => ({
+          href: exp.href,
+          label: exp.name,
+          icon: exp.icon || null
+        }))
+      ]
+    }
+  ];
 
   useEffect(() => {
     if (!hotkeysOn) return;

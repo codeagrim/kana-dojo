@@ -11,6 +11,7 @@ const random = new Random();
 
 let audioContext: AudioContext | null = null;
 const bufferCache = new Map<string, AudioBuffer>();
+const MAX_CACHE_SIZE = 20;
 
 /**
  * Get or create the shared AudioContext
@@ -29,6 +30,7 @@ const getAudioContext = (): AudioContext => {
 
 /**
  * Load and decode an audio file into an AudioBuffer (cached)
+ * Uses FIFO eviction when cache exceeds MAX_CACHE_SIZE
  */
 const loadAudioBuffer = async (url: string): Promise<AudioBuffer | null> => {
   // Check cache first
@@ -42,6 +44,14 @@ const loadAudioBuffer = async (url: string): Promise<AudioBuffer | null> => {
 
     const arrayBuffer = await response.arrayBuffer();
     const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+    // FIFO eviction: delete oldest entry if cache is full
+    if (bufferCache.size >= MAX_CACHE_SIZE) {
+      const firstKey = bufferCache.keys().next().value;
+      if (firstKey) {
+        bufferCache.delete(firstKey);
+      }
+    }
 
     bufferCache.set(url, audioBuffer);
     return audioBuffer;
