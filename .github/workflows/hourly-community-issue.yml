@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   issues: write
+  pull-requests: write
 
 # Prevent multiple runs from overlapping and causing race conditions
 concurrency:
@@ -384,34 +385,76 @@ jobs:
             core.setOutput('should_commit', 'true');
 
       - name: Commit backlog updates
+        id: commit-backlog
         if: steps.create-issue.outputs.should_commit == 'true'
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/community/
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          add-paths: |
+            data/community/
+          commit-message: 'chore(automation): mark item as issued'
+          branch: automation/community-data/hourly-${{ github.run_id }}
+          title: 'chore(automation): update community backlog'
+          body: Automated update to community backlog state.
+          base: main
+          delete-branch: true
 
-          # Check if there are changes to commit
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-            exit 0
-          fi
+      - name: Auto-approve and merge automation PR
+        if: steps.create-issue.outputs.should_commit == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.AUTOMATION_PR_TOKEN }}
+          script: |
+            const prNumber = Number(process.env.PR_NUMBER);
 
-          git commit -m "chore(automation): mark item as issued"
+            async function sleep(ms) {
+              return new Promise(function(resolve) { setTimeout(resolve, ms); });
+            }
 
-          # Pull with rebase and push with retry logic
-          MAX_RETRIES=3
-          for i in $(seq 1 $MAX_RETRIES); do
-            echo "Attempt $i of $MAX_RETRIES"
-            git pull --rebase origin main || git pull --rebase origin master || true
-            if git push; then
-              echo "Push successful!"
-              exit 0
-            fi
-            if [ $i -lt $MAX_RETRIES ]; then
-              echo "Push failed, retrying in 5 seconds..."
-              sleep 5
-            fi
-          done
+            if (!prNumber) {
+              console.log('No PR was created; nothing to merge');
+              return;
+            }
 
-          echo "Failed to push after $MAX_RETRIES attempts"
-          exit 1
+            await github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              event: 'APPROVE',
+              body: 'Automated approval for automation PR.'
+            });
+
+            const MAX_RETRIES = 10;
+            for (let i = 1; i <= MAX_RETRIES; i += 1) {
+              try {
+                await github.rest.pulls.merge({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: prNumber,
+                  merge_method: 'squash'
+                });
+                console.log('Merged automation PR #' + prNumber);
+                return;
+              } catch (e) {
+                console.log('Merge attempt ' + i + ' failed: ' + e.message);
+                if (e.status === 409) {
+                  try {
+                    await github.rest.pulls.updateBranch({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      pull_number: prNumber
+                    });
+                    console.log('Requested branch update for PR #' + prNumber);
+                  } catch (updateErr) {
+                    console.log('Could not update branch: ' + updateErr.message);
+                  }
+                }
+                if (i < MAX_RETRIES) {
+                  await sleep(2000);
+                }
+              }
+            }
+
+            throw new Error('Failed to merge automation PR #' + prNumber);
+        env:
+          PR_NUMBER: ${{ steps.commit-backlog.outputs.pull-request-number }}

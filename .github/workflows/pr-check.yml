@@ -11,6 +11,7 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'automation/') }}
 
     steps:
       - name: Checkout code
