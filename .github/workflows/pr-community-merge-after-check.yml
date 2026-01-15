@@ -21,7 +21,7 @@ jobs:
       - name: Merge community PR
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.AUTOMATION_PR_REVIEWER_TOKEN }}
+          github-token: ${{ secrets.AUTOMATION_PR_TOKEN }}
           script: |
             async function sleep(ms) {
               return new Promise(function(resolve) { setTimeout(resolve, ms); });
@@ -107,14 +107,6 @@ jobs:
               console.log('PR #' + prNumber + ' is not mergeable');
               return;
             }
-
-            await github.rest.pulls.createReview({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber,
-              event: 'APPROVE',
-              body: 'Automated approval after PR Quality Check passed.'
-            });
 
             const MAX_RETRIES = 10;
             for (let i = 1; i <= MAX_RETRIES; i += 1) {
