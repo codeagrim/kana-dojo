@@ -107,6 +107,13 @@ const WelcomeModal = () => {
     setHasSeenWelcome(true);
   };
 
+  const handleTryDemo = () => {
+    playClick();
+    setIsVisible(false);
+    setHasSeenWelcome(false);
+    router.push('/demo');
+  };
+
   useEffect(() => {
     router.prefetch('/demo');
   }, [router]);
@@ -183,10 +190,7 @@ const WelcomeModal = () => {
                 className='py-4 text-xl font-semibold tracking-wide uppercase'
                 borderRadius='3xl'
                 borderBottomThickness={8}
-                onClick={() => {
-                  handleClose();
-                  router.push('/demo');
-                }}
+                onClick={handleTryDemo}
               >
                 <CircleStar
                   className='h-6 w-6 animate-spin text-[var(--background-color)]'
